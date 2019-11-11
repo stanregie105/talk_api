@@ -1,0 +1,54 @@
+{
+    "dishes":[
+        {
+            "name": "Uthapizza",
+            "image": "imges.uthapizza.png",
+            "category":"mains",
+            "label":"Hot",
+            "price":"4.99",
+            "featured":"true",
+            "description":" A unique combination ofIndian Uthappam",
+            "comments":[
+                {
+                "rating":5,
+                "comment":"imagine all the food in london",
+                "author":"John Lenon",
+                "date":"2012-18-16TR17:57:28.5560942"
+                },
+                {
+                    "rating":4,
+                    "comment":"Sends anyone to heaven,I wish i could ",
+                    "author":"paul smith",
+                    "date":"2014-28-78TR17:77:28.5560942"
+                },
+                {
+                    "rating":3,
+                    "comment":"ultimate reaching for the stars",
+                    "author":"Markly Koben",
+                    "date":"2002-04-07TR17:89:28.5870942"
+                },
+                 {
+                    "rating":2,
+                    "comment":"Eat it, just dont go there",
+                    "author":"Duren white",
+                    "date":"2023-23-07TR17:09:28.5870942"
+                },
+                 {
+                    "rating":1,
+                    "comment":"I wont be avilable for this",
+                    "author":"coben Marcus",
+                    "date":"2020-14-07GH7:09:28.5870942"
+                },
+                {
+                	"rating":0,
+                	"comment":"Do a good job when u have the chance",
+                	"author":"Arnold claire",
+                	"date":"2015-12-07JH7:79:28.5570942"
+                	
+                }
+
+
+            ]
+        }
+    ]
+}
