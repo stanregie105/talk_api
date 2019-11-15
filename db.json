@@ -1,3 +1,4 @@
+[
 {
     "dishes":[
         {
@@ -46,9 +47,32 @@
                 	"date":"2015-12-07JH7:79:28.5570942"
                 	
                 }
+             ]
+             
+        }
+    
+    ]
+    
+},
 
-
-            ]
+{"promotions":[{
+    "name":"weekend grand buffet",
+    "image":"imges/buffet/png",
+    "label":"new",
+    "price":"19.99",
+    "description":"Featuring..."
+}
+]
+},
+{
+    "leaders":[
+        {
+            "name":"Peter Pan",
+            "image":"imges/alberto.png",
+            "designation":"Chief Epicurious officer",
+            "abbr":"CEO",
+            "description":"Our CEO,Peter,..."
         }
     ]
 }
+]
