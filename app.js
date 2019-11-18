@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');// setup our sessions
+var FileStore =require('session-file-store')(session);// keeptrack of our sessions
 
 // imports routers
 var indexRouter = require('./routes/index');
@@ -31,12 +33,19 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser('12345-67890-09876-54321'));
+//app.use(cookieParser('12345-67890-09876-54321'));
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: false,
+  resave:false,
+  store: new FileStore()
+}))
 
 
 function auth(req,res,next){
-  console.log(req.signedCookies);
-  if(!req.signedCookies.user){
+  console.log(req.session);
+  if(!req.session.user){
     
   var authHeader = req.headers.authorization;
   if(!authHeader){
@@ -52,7 +61,7 @@ function auth(req,res,next){
   var username = auth[0];
   var password = auth[1];
   if(username==='Admin' && password==='password'){
-    res.cookie('user','Admin',{signed:true})
+    req.session.user = 'Admin';
     next();
   }//if uername/password mayches call next and let user proceed forward
   else{
@@ -64,7 +73,7 @@ function auth(req,res,next){
   }
   }// if signedCookies dont contain user property on it, lookforauthorization header
  else{
-   if(req.signedCookies.user==='Admin'){
+   if(req.session.user==='Admin'){
      next();
    }// allows request pass
    else{
