@@ -40,47 +40,30 @@ app.use(session({
   saveUninitialized: false,
   resave:false,
   store: new FileStore()
-}))
-
+}));
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
 
 function auth(req,res,next){
   console.log(req.session);
   if(!req.session.user){
     
-  var authHeader = req.headers.authorization;
-  if(!authHeader){
-    var err = new Error('you are not authenticated');
+   var err = new Error('you are not authenticated');
+   err.status = 401;// unauthorized access
+   return next(err);
 
-    res.setHeader('WWW-Authenticate','Basic');
-    err.status = 401;// unauthorised access
-    return next(err);
-  }// authorization does not exist, reject user and prompt for username and password
 
-  // when the authorization header exists
-  var auth = new Buffer.from(authHeader.split(' ')[1],'base64').toString().split(':');
-  var username = auth[0];
-  var password = auth[1];
-  if(username==='Admin' && password==='password'){
-    req.session.user = 'Admin';
-    next();
-  }//if uername/password mayches call next and let user proceed forward
-  else{
-    var err = new Error('you are not authenticated');
-
-    res.setHeader('WWW-Authenticate','Basic');
-    err.status = 401;// unauthorised access
-    return next(err); 
-  }
+ 
   }// if signedCookies dont contain user property on it, lookforauthorization header
  else{
-   if(req.session.user==='Admin'){
+   if(req.session.user==='authenticated'){
      next();
    }// allows request pass
    else{
      var err = new Error('you are not authenticated');
 
     
-    err.status = 401;// unauthorised access
+    err.status = 403;// unauthorised access
     return next(err); 
    }
  }// pops up error message
@@ -88,8 +71,7 @@ function auth(req,res,next){
 app.use(auth);
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);

@@ -184,7 +184,7 @@ dishRouter.route('/:dishId/comments/:commentId')
          dish.comments.id(req.params.commentId).rating = req.body.rating;
        }
         if(req.body.comment){
-        dish.comments.id(req.params.commentId).comment = req.body.rating;
+        dish.comments.id(req.params.commentId).comment = req.body.comment;
        }
         dish.save()
          .then(()=>{
@@ -211,7 +211,7 @@ dishRouter.route('/:dishId/comments/:commentId')
      Dishes.findById(req.parms.dishId)
      .then((dish)=>{
         if(dish!=null && dish.comments.id(req.params.commentId)!=null){
-        
+        //deletes specific comment with the given id
             dish.comments.id(req.params.commentId).remove();
         
         dish.save()
