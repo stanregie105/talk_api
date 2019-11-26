@@ -25,13 +25,27 @@ router.post('/signup',(req,res,next)=>{
      res.json({err:err});
      }// there is same user in userfield
      else{
-        passport.authenticate('local')(req,res, ()=>{
+       if(req.body.firstname)// if firstname is in req.body
+         user.firstname = req.body.firstname; // load into the user
+        if(req.body.lastname)
+         user.lastname = req.body.lastname;
+         user.save((err, user)=>{
+           if(err){
+              res.statusCode = 500;
+              res.setHeader('Content-Type','application/json');
+              res.json({err:err});
+              return;
+           }// if err exists for the new chqnge
+            passport.authenticate('local')(req,res, ()=>{
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
             res.json({success:true,status:'Registration Successful!'});
+         }); //success result if everything succeeds
        
-        });
-     }
+       
+       
+        });// saves the changes
+     } // if registration was successful
     })
   });
 
