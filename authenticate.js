@@ -15,8 +15,9 @@ passport.deserializeUser(User.deserializeUser());
 exports.getToken = function(user){
     return jwt.sign(user, config.secretKey,
     {expiresIn: 3600});
-}
+};
 
+//configures jwt strategy
 var opts = {}; // suggests how jsonwebtoken will be extracted frm incoming request message
 
 // extracts json  token frm header
@@ -26,7 +27,7 @@ opts.secretOrKey = config.secretKey; // supplies the secret key to be used withi
 // jsonwebtoken passport configured
 exports.jwtPassport = passport.use(new JwtStrategy(opts,
 (jwt_payload, done)=>{
-    console.log("JWT patload: ", jwt_payload);
+    console.log("JWT payload: ", jwt_payload);
     User.findOne({_id: jwt_payload._id},(err, user)=>{
         if(err){
             return done(err,false); 
@@ -41,5 +42,16 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 
 }));
 
+
 // verifies incoming user
 exports.verifyUser = passport.authenticate('jwt', {session: false});
+exports.verifyAdmin = function(req, res, next){
+    if(req.user.admin){
+        return next();
+    }
+    else{
+        var err = new Error("You are not authorised to perform this operation");
+        err.status = 401;
+        return next(err);
+    }
+};

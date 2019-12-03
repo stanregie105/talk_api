@@ -9,8 +9,16 @@ var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.get('/', (req, res, next)=> {
-  res.send('respond with a resource');
+router.get('/',authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next)=> {
+  User.find({}, function(err,user){
+       if(err){
+        var err = new Error("You are not authorised to perform this operation");
+        err.status = 401;
+        return next(err);
+       }else{
+         res.json(user);
+       }
+  });
 });
 
 router.post('/signup',(req,res,next)=>{
