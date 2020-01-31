@@ -3,37 +3,43 @@ const Schema = mongoose.Schema;
 require('mongoose-currency').loadType(mongoose);
 const Currency = mongoose.Types.Currency;
 
-const promotionSchema = new Schema({
-    name: {
-        type: String ,
-        required: true,
-        unique: true
-    },
-    image:{
+
+const attendeeSchema = new Schema({
+   
+    name:{
         type: String ,
         required: true,
        
     },
-    label:{
+    occupation:{
         type: String ,
         default: '',
        
+    }
+},
+    {
+    timestamps:true
+});
+
+const talkSchema = new Schema({
+   
+    sport:{
+        type: String ,
+        required: true,
+       
     },
-    
     price:{
       type: Currency,
       required: true,
       min:0
     },
-    description:{
-        type: String,
-        required: true
-    }
+    attendees: [attendeesSchema]
+},
 
-},{
+    {
     timestamps:true
 });
 
-var Promotions = mongoose.model('promotion', promotionSchema);
+var Talks = mongoose.model('talk', talkSchema);
 
-module.exports = Promotions;
+module.exports = Talks;

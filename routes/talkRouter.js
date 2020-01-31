@@ -1,103 +1,101 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
+const Talks = require('../models/talk');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
-const Dishes = require('../models/dishes');
 
-const dishRouter = express.Router();
-dishRouter.use(bodyParser.json());// enable dish router support request body
-dishRouter.route('/')
+
+const talkRouter = express.Router();
+talkRouter.use(bodyParser.json());// enable talk router support request body
+talkRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200) })
 .get(cors.cors, (req,res,next)=>{
-    Dishes.find({})
-    .populate('comments.author')
-      .then((dishes)=>{
+   Talks.find(req.query)//make it ableto handle query parameter
+      .then((talks)=>{
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        res.json(dishes);
+        res.json(talks);
       },(err)=>next(err))
       .catch((err)=>next(err));
     
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
-    Dishes.create(req.body)
-     .then((dish)=>{
-        console.log('Dish Created', dish);
+    Talks.create(req.body)
+     .then((talk)=>{
+        console.log('Dish Created', talk);
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        res.json(dish);
+        res.json(talk);
         },(err)=>next(err))
       .catch((err)=>next(err));
 })
 
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
     res.statusCode = 403;
-    res.end('put OPeration not supported on dishes');
+    res.end('put OPeration not supported on talks');
 })
 
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
-    Dishes.remove({})
+    Talks.remove({})
      .then((resp)=>{
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
         res.json(resp);
      },(err)=>next(err))
       .catch((err)=>next(err));
-});// this is a dangerous operation as it deletes all the items in the dishes
 
-dishRouter.route('/:dishId')
+});// this is a dangerous operation as it deletes all the items in the dishes
+talkRouter.route('/:talkId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200) })
-.get(cors.cors,(req,res,next)=>{
-    Dishes.findById(req.params.dishId)
-    .populate('comments.author')
-    .then((dish)=>{
+.get(cors.cors, (req,res,next)=>{
+ Talks.findById(req.params.leaderId)
+    .then((talk)=>{
      res.statusCode = 200;
      res.setHeader('Content-Type','application/json');
-     res.json(dish);
+     res.json(talk);
     },(err)=>next(err))
-      .catch((err)=>next(err));
+      .catch((err)=>next(err));    
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
     res.statusCode = 403;
-  res.end('POST operation not supported on /dishes/'+ req.params.dishId);
+  res.end('POST operation not supported on /talks/'+ req.params.talkId);
 })
 
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
-   Dishes.findByIdAndUpdate(req.params.dishId,
+     Talks.findByIdAndUpdate(req.params.talkId,
    {$set: req.body},
    {new: true})
-   .then((dish)=>{
+   .then((talk)=>{
      res.statusCode = 200;
      res.setHeader('Content-Type','application/json');
-     res.json(dish);
+     res.json(talk);
     },(err)=>next(err))
    .catch((err)=>next(err));
 })
 
-.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
-   Dishes.findByIdAndRemove(req.params.dishId)
+.delete(cors.corsWithOptions, authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+ Talks.findByIdAndRemove(req.params.talkId)
     .then((resp)=>{
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
         res.json(resp);
      },(err)=>next(err))
-    .catch((err)=>next(err));
-});
-dishRouter.route('/:dishId/comments')
+    .catch((err)=>next(err));});
+
+ talkRouter.route('/:talkId/attendees')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200) })
 .get(cors.cors,(req,res,next)=>{
-    Dishes.findById(req.params.dishId)
-    .populate('comments.author')
-      .then((dish)=>{
-          if(dish!=null){
+    Talks.findById(req.params.talkId)
+    .populate('attendees.name')
+      .then((talk)=>{
+          if(talk!=null){
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        res.json(dish.comments);
+        res.json(talk.attendees);
       } // dish exists
       else{
-          err = new Error('Dish'+ req.params.dishId+ 'not found');
+          err = new Error('Dish'+ req.params.talkId+ 'not found');
           err.status=404;
           return next(err);
       }//error message
@@ -106,25 +104,25 @@ dishRouter.route('/:dishId/comments')
     
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
-    Dishes.findById(req.params.dishId)
-     .then((dish)=>{
-          if(dish!=null){
+    Talks.findById(req.params.talkId)
+     .then((talk)=>{
+          if(talk!=null){
         req.body.author = req.user._id;
-        dish.comments.push(req.body); // push comment to request body
-        dish.save()
-         .then(()=>{
-         Dishes.findById(dish._id)
-          .populate('comments.author')
-          .then((dish)=>{
+        talk.attendees.push(req.body); // push req body of name to attendees
+        talk.save()
+        .then((talk)=>{
+         Talks.findById(talk._id)
+          .populate('attendees.name')
+          .then((name)=>{
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
-            res.json(dish);
+            res.json(talk);
          })
          
          },(err)=>next(err));
         
       }else{
-          err = new Error('Dish'+ req.params.dishId+ 'not found');
+          err = new Error('Dish'+ req.params.talkId+ 'not found');
           err.status=404;
           return next(err);
       }
@@ -134,50 +132,50 @@ dishRouter.route('/:dishId/comments')
 
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
     res.statusCode = 403;
-    res.end('put OPeration not supported on dishes'+req.params.dishId+'/comments');
+    res.end('put OPeration not supported on talks'+req.params.dishId+'/attendees');
 })
 
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=>{
-    Dishes.findById(req.parms.dishId)
-     .then((dish)=>{
-        if(dish!=null){
-        for(var i=(dish.comments.length-1);1>=0;i--){
-            dish.comments.id(dish.comments[i]._id).remove();
+    Talks.findById(req.parms.talkId)
+     .then((talk)=>{
+        if(talk!=null){
+        for(var i=(talk.attendees.length-1);i>=0;i--){
+            talk.attendees.id(talk.attendees[i]._id).remove();
         }
-        dish.save()
-         .then(()=>{
+        talk.save()
+         .then((talk)=>{
           res.statusCode = 200;
           res.setHeader('Content-Type','application/json');
-          res.json(dish);
+          res.json(talk);
          },(err)=>next(err));
         
       }else{
-          err = new Error('Dish'+ req.params.dishId+ 'not found');
+          err = new Error('Dish'+ req.params.talkId+ 'not found');
           err.status=404;
           return next(err);
       }
      },(err)=>next(err))
       .catch((err)=>next(err));
-});// this is a dangerous operation as it deletes all the items in the dishes
+});// this is a dangerous operation as it deletes all the items in the talks
 
-dishRouter.route('/:dishId/comments/:commentId')
+talkRouter.route('/:talkId/attendees/:attendeeId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200) })
 .get(cors.cors,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
-    .populate('comments.author')
-    .then((dish)=>{
-     if(dish!=null && dish.comments.id(req.params.commentId)!=null){
+    .populate('attendees.name')
+    .then((talk)=>{
+     if(talk!=null && talk.attendees.id(req.params.attendeeId)!=null){
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        res.json(dish.comments.id(req.params.commentId));
+        res.json(talk.attendees.id(req.params.attendeeId));
       } // dish exists
-      else if(dish==null){
-          err = new Error('Dish'+ req.params.dishId+ 'not found');
+      else if(talk==null){
+          err = new Error('Talk'+ req.params.talkId+ 'not found');
           err.status=404;
           return next(err);
       }
       else {
-          err = new Error('comments'+ req.params.commentId+ 'not found');
+          err = new Error('attendees'+ req.params.attendeeId+ 'not found');
           err.status=404;
           return next(err);
       }
@@ -186,94 +184,93 @@ dishRouter.route('/:dishId/comments/:commentId')
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, (req,res,next)=>{
     res.statusCode = 403;
-  res.end('POST operation not supported on /dishes/'+ req.params.dishId+
-  '/dishes'+req.params.commentId+'/comments/');
+  res.end('POST operation not supported on /talks/'+ req.params.talkId+
+  '/talks'+req.params.attendeeId+'/attendees/');
 })
 
 .put(cors.corsWithOptions, authenticate.verifyUser,(req,res,next)=>{
-    Dishes.findById(req.params.dishId)
-    .then((dish)=>{
-     if(dish!=null && dish.comments.id(req.params.commentId)!=null &&
-        req.user._id.equals(dish.comments._id(req.params.commentId).author)){
+    Talks.findById(req.params.talkId)
+    .then((talk)=>{
+     if(talk!=null && talk.attendees.id(req.params.attendeeId)!=null &&
+        req.user._id.equals(talk.attendees._id(req.params.attendeeId).name)){
        if(req.body.rating){
-         dish.comments.id(req.params.commentId).rating = req.body.rating;
+         talk.attendees.id(req.params.attendeeId).rating = req.body.rating;
        }
-        if(req.body.comment){
-        dish.comments.id(req.params.commentId).comment = req.body.comment;
+        if(req.body.presenter){
+        talk.attendees.id(req.params.attendeeId).presenter = req.body.presenter;
        }
-        dish.save()
-         .then(()=>{
-            Dishes.findById(dish._id)
-            .populate('comments.author')
+        talk.save()
+         .then((dish)=>{
+            Talks.findById(talk._id)
+            .populate('attendees.name')
             
-            .then((dish)=>{
+            .then((talk)=>{
                 
                res.statusCode = 200;
                res.setHeader('Content-Type','application/json');
-               res.json(dish);
+               res.json(talk);
                
                 
             })
          
          },(err)=>next(err));
-      } // dish exists
-      else if(dish==null){
-          err = new Error('Dish'+ req.params.dishId+ 'not found');
+      } // talk exists
+      else if(talk==null){
+          err = new Error('Talk'+ req.params.talkId+ 'not found');
           err.status=404;
           return next(err);
       }
-      else if(dish.comments.id(req.params.commentId) == null){
-          err = new Error('comments'+ req.params.commentId+ 'not found');
+      else if(talk.attendees.id(req.params.attendeeeId) == null){
+          err = new Error('attendees'+ req.params.attendeeId+ 'not found');
           err.status=404;
           return next(err);
       }else{
-             var err = new Error("You are not authorized to delete this comment");
+             var err = new Error("You are not authorized to delete this attendee");
              err.status = 401;
              return next(err);
          }
     },(err)=>next(err))
    .catch((err)=>next(err));
-})// An ordinary user can performa delete operation on comment
+})// An ordinary user can performa delete operation on attendee
 
 .delete(cors.corsWithOptions, authenticate.verifyUser, (req,res,next)=>{
-     Dishes.findById(req.params.dishId)
-     .then((dish)=>{
-        if(dish!=null && dish.comments.id(req.params.commentId)!=null&&
-        req.user._id.equals(dish.comments._id(req.params.commentId).author)){
-        //deletes specific comment with the given id
-            dish.comments.id(req.params.commentId).remove();
+     Talks.findById(req.params.talkId)
+     .then((talk)=>{
+        if(talk!=null && talk.attendees.id(req.params.attendeeId)!=null&&
+        req.user._id.equals(talk.attendees._id(req.params.attendeeId).name)){
+        //deletes specific attendee with the given id
+            talk.attendees.id(req.params.attendeeId).remove();
         
-        dish.save()
-         .then((dish)=>{
-          Dishes.findById(dish._id)
-            .populate('comments.author')
-            .then((dish)=>{
+        talk.save()
+         .then((talk)=>{
+          Talks.findById(talk._id)
+            .populate('attendees.name')
+            .then((talk)=>{
                
                res.statusCode = 200;
                res.setHeader('Content-Type','application/json');
-               res.json(dish);
+               res.json(talk);
                
             })
          },(err)=>next(err));
         
-      }  else if(dish==null){
-          err = new Error('Dish'+ req.params.dishId+ 'not found');
+      }  else if(talk==null){
+          err = new Error('Talk'+ req.params.talkId+ 'not found');
           err.status=404;
           return next(err);
       }
-      else if(dish.comments.id(req.params.commentId) == null) {
-          err = new Error('comments'+ req.params.commentId+ 'not found');
+      else if(talk.attendees.id(req.params.attendeeId) == null) {
+          err = new Error('attendees'+ req.params.attendeeId+ 'not found');
           err.status=404;
           return next(err);
       } else{
-                     var err = new Error("You are not authorized to delete this comment");
+                     var err = new Error("You are not authorized to delete this attendee");
                      err.status = 401;
                      return next(err);
                 }
      },(err)=>next(err))
       .catch((err)=>next(err));
-}); // An ordinary user can performa delete operation on comment
- 
+});
 
 
-module.exports = dishRouter;
+module.exports = talkRouter;

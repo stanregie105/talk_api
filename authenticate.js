@@ -15,7 +15,7 @@ passport.deserializeUser(User.deserializeUser());
 
 exports.getToken = function(user){
     return jwt.sign(user, config.secretKey,
-    {expiresIn: 3600});
+    {expiresIn: 3600});// valid for one hour
 };
 
 //configures jwt strategy
@@ -60,7 +60,8 @@ exports.verifyAdmin = function(req, res, next){
 exports.facebookPassport =passport.use(new
  FacebookTokenStrategy({
      clientID: config.facebook.clientId,
-     ClientSecret: config.facebook.clientSecret
+     ClientSecret: config.facebook.clientSecret,
+     callbackURL: config.facebook.callbackURL
  }, (accessToken, refreshToken, profile, done)=>{
      User.findOne({facebookId: profile.id}, (err, user)=>{
          if(err){
@@ -70,6 +71,7 @@ exports.facebookPassport =passport.use(new
              return done(null, user);
          }//user with the login exists
          else{
+             // creating a new facebook profile for user
             user = new User({username :profile.displayName});
             user.facebookId = profile.id;
             user.firstname= profile.name.givenName;
