@@ -7,15 +7,26 @@ const Currency = mongoose.Types.Currency;
 const attendeeSchema = new Schema({
    
     name:{
-        type: String ,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId ,
+        ref: 'User',
        
     },
     occupation:{
         type: String ,
         default: '',
        
-    }
+    },
+    rating:{
+      type: Number,
+      min:1,
+      max:2,
+      required:true
+  },
+  presenter:{
+      type: String,
+      required: true
+
+  }
 },
     {
     timestamps:true
@@ -33,7 +44,7 @@ const talkSchema = new Schema({
       required: true,
       min:0
     },
-    attendees: [attendeesSchema]
+    attendees: [attendeeSchema]
 },
 
     {

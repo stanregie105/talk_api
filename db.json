@@ -15,15 +15,20 @@
     },
     {
         "attendees":[
+            
             {
                 
                 "name": "collins dada",
-                "occupation":"banker"
+                "occupation":"banker",
+                "rating": 2,
+                "presenter": "male"
             },
             {
                 
                 "name": "ken ola",
-                "occupation":"doctor"
+                "occupation":"doctor",
+                "rating": 1,
+                "presenter": "female"
             }
         ]
     }
